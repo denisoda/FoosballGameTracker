@@ -44,7 +44,7 @@ namespace FoosballGameTracker.Controllers
             if (await _gameTrackingService.IsGameFinished(gameId))
                 return BadRequest("Game is already finished");
 
-            var gameResult = await _gameTrackingService.GetGameResult(gameId);
+            var gameResult = await _gameTrackingService.GetCurrentGameResult(gameId);
 
             return Ok(gameResult);
         }

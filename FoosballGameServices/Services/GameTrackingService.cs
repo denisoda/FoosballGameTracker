@@ -24,28 +24,39 @@ namespace FoosballGameServices.Services
             return _gameRepository.AddGame(aTeamName, bTeamName);
         }
 
-        public async Task AddGoalToTheTeam(Guid teamId, Team scoredTeam)
+        public async Task AddGoalToTheTeam(Guid gameId, Team scoredTeam)
         {
-            if (await IsGameFinished(teamId))
+            if (await IsGameFinished(gameId))
                 throw new ArgumentException("The game is already finnished");
 
-            var gameResult = await GetGameResult(teamId);
-
+            var gameResult = await GetCurrentGameResult(gameId);
 
             switch (scoredTeam)
             {
                 case Team.A:
                     {
-                        if (gameResult.SetResults.LastOrDefault().ATeamGoals == 9) // should be moved somewhere else not hardcoded
-                            await _gameRepository.AddGoal(teamId, gameResult.ATeamName);
-                        await _gameRepository.AddNewSet(gameResult.GameId);
+                        if (gameResult.SetResults.LastOrDefault().ATeamGoals != 9) // should be moved somewhere else not hardcoded and also refactor to avoid repetition 
+                        {
+                            await _gameRepository.AddGoal(gameId, gameResult.ATeamName);
+                        }
+                        else
+                        {
+                            await _gameRepository.AddGoal(gameId, gameResult.ATeamName);
+                            await _gameRepository.AddNewSet(gameResult.GameId);
+                        }
                     }
                     break;
                 case Team.B:
                     {
-                        if (gameResult.SetResults.LastOrDefault().BTeamGoals == 9)
-                            await _gameRepository.AddGoal(teamId, gameResult.BTeamName);
-                        await _gameRepository.AddNewSet(gameResult.GameId);
+                        if (gameResult.SetResults.LastOrDefault().BTeamGoals != 9) // should be moved somewhere else not hardcoded and also refactor to avoid repetition 
+                        {
+                            await _gameRepository.AddGoal(gameId, gameResult.BTeamName);
+                        }
+                        else
+                        {
+                            await _gameRepository.AddGoal(gameId, gameResult.BTeamName);
+                            await _gameRepository.AddNewSet(gameResult.GameId);
+                        }
                     }
                     break;
                 default:
@@ -55,13 +66,16 @@ namespace FoosballGameServices.Services
 
         public async Task<bool> IsGameFinished(Guid gameId)
         {
-            var gameResult = await GetGameResult(gameId);
+            var gameResult = await GetCurrentGameResult(gameId);
 
             return gameResult.IsGameFinished;
         }
 
-        public async Task<GameResult> GetGameResult(Guid gameId)
+        public async Task<GameResult> GetCurrentGameResult(Guid gameId)
         {
+            if (await IsGameFinished(gameId))
+                throw new ArgumentException("The game is already finnished");
+
             return await _gameRepository.GetGameResult(gameId);
         }
     }

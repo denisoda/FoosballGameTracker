@@ -9,6 +9,6 @@ namespace FoosballGameServices
         Task<Guid> CreateGame(string aTeamName, string bTeamName);
         Task AddGoalToTheTeam(Guid gameId, Team teamName);
         Task<bool> IsGameFinished(Guid gameId);
-        Task<GameResult> GetGameResult(Guid gameId);
+        Task<GameResult> GetCurrentGameResult(Guid gameId);
     }
 }

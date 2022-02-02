@@ -1,4 +1,5 @@
 ﻿using FoosballGameServices;
+using FoosballGameServices.Interfaces;
 using FoosballGameTracker.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -13,18 +14,20 @@ namespace FoosballGameTracker.Controllers
     [ApiController]
     public class FoosbalGameArchive : ControllerBase
     {
-        private IGameTrackingService _gameTrackingService;
+        private readonly IGameArchiveService _gameArchiveService;
+        private readonly IGameTrackingService _gameTrackingService;
 
-        public FoosbalGameArchive(IGameTrackingService gameTrackingService)
+        public FoosbalGameArchive(IGameArchiveService gameArchiveService, IGameTrackingService gameTrackingService)
         {
+            _gameArchiveService = gameArchiveService;
             _gameTrackingService = gameTrackingService;
         }
 
         [HttpGet]
-        public async Task<ActionResult> GameResults(DataType statingFromTheDate)
+        public async Task<ActionResult> GameResults(DateTime statingFromTheDate)
         {
-            //get from repository via service
-            return Ok();
+            var results = await _gameArchiveService.GetGameResult(statingFromTheDate, DateTime.Now);
+            return Ok(results);
         }
 
         [HttpGet]
@@ -32,8 +35,10 @@ namespace FoosballGameTracker.Controllers
         {
             if (!await _gameTrackingService.IsGameFinished(gameId))
                 return BadRequest("The game is still in progress");
-            //get from repository via service
-            return Ok();
+            
+            var result =  await _gameArchiveService.GetGameResult(gameId);
+
+            return Ok(result);
         }
     }
 }
